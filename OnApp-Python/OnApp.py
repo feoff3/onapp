@@ -3,7 +3,8 @@
         @Author Karl Kloppenborg
         @Email: karl@crucialp.com
         @License GPL 3.0
-        @Version 1.0
+        @Version 1.1
+		@Contributed: Daniel Tandowski
 
     OnApp Python Module - Providing a Python Interface for OnApp
     Copyright (C) 2012  Karl Kloppenborg
