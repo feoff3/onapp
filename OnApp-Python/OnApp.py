@@ -136,6 +136,31 @@ class OnAppHyperVisors:
         baseObject = False;
         def __init__(self, baseObject):
                 self.baseObject = baseObject;
+				
+		######## HyperVisor Methods ########
+		
+		#
+		# Get the list of Hypervisors, reference 14.1 - Page 116
+		#
+		def getHyperVisorDetails(self, hvID):
+                uriString = "/settings/hypervisors/%s.json" % (str(hvID));
+                response = self.baseObject.sendRequest("GET", uriString);
+                data = json.loads(response.read());
+                if 'hypervisor' in data:
+                        return data['hypervisor'];
+                else:
+                        return data;
+		
+		#
+		# Get the list of unassigned hypervisors
+		#
+		def getUnassignedHyperVisors(self):
+			response = self.baseObject.sendRequest("GET", "/hypervisors/not_grouped.json");
+			data = json.loads(response.read());
+			if 'hypervisors' in data:
+					return data['hypervisors'];
+			else:
+					return data;
 
         def joinDataStore(self, dataStoreID, hyperVisorID):
                 postURL = "/settings/hypervisors/%s/data_store_joins.json" % (str(hyperVisorID));
@@ -157,15 +182,6 @@ class OnAppHyperVisors:
                 response = self.baseObject.sendRequest("GET", uriString);
                 data = json.loads(response.read());
                 return data;
-
-        def getHyperVisorDetails(self, hvID):
-                uriString = "/settings/hypervisors/%s.json" % (str(hvID));
-                response = self.baseObject.sendRequest("GET", uriString);
-                data = json.loads(response.read());
-                if 'hypervisor' in data:
-                        return data['hypervisor'];
-                else:
-                        return data;
 
 class OnAppVirtualMachines:
         baseObject = False;
