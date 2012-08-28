@@ -8,7 +8,7 @@ It is used as a wrapper API to implement OnApp control in a standard format for 
 
 Note: Requires Python >= 2.6
 Implementation example:
-
+```
 #!/usr/bin/python
 
 ## Import the required modules
@@ -27,3 +27,4 @@ hvList = hvAPI. getListHyperVisors();
 
 for hv in hvList:
                 print hv[‘hypervisor’]; ##print all the info about the hv.
+```
