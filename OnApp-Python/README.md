@@ -1,7 +1,7 @@
 OnApp-Python Library
 ====
 
-This library was developed by Karl Kloppenborg with the contribution help of Daniel Tandowski
+This library was developed by [Karl Kloppenborg](https://github.com/karlkloppenborg) with the contribution help of [Daniel Tandowski](https://github.com/danieltandowski)
 It is used as a wrapper API to implement OnApp control in a standard format for Python.
 
 ==
