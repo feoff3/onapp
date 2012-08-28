@@ -133,99 +133,187 @@ class OnAppHyperVisorZones:
                 return  data;
 
 class OnAppHyperVisors:
-        baseObject = False;
-        def __init__(self, baseObject):
-                self.baseObject = baseObject;
-				
-		######## HyperVisor Methods ########
-		
-		#
-		# Get the list of Hypervisors, reference 14.1 - Page 116
-		#
-		def getHyperVisorDetails(self, hvID):
-                uriString = "/settings/hypervisors/%s.json" % (str(hvID));
-                response = self.baseObject.sendRequest("GET", uriString);
-                data = json.loads(response.read());
-                if 'hypervisor' in data:
-                        return data['hypervisor'];
-                else:
-                        return data;
-		
-		#
-		# Get the list of unassigned hypervisors
-		#
-		def getUnassignedHyperVisors(self):
-			response = self.baseObject.sendRequest("GET", "/hypervisors/not_grouped.json");
-			data = json.loads(response.read());
-			if 'hypervisors' in data:
-					return data['hypervisors'];
-			else:
-					return data;
+	baseObject = False;
+	def __init__(self, baseObject):
+			self.baseObject = baseObject;
+			
+	######## HyperVisor Methods ########
+	
+	#
+	# Get the list of Hypervisors, reference 14.1 - Page 116
+	#
+	def getListHyperVisors(self):
+		uriString = "/settings/hypervisors.json";
+		response = self.baseObject.sendRequest("GET", uriString);
+		data = json.loads(response.read());
+		return data;
+	
+	#
+	# Get the list of unassigned hypervisors, reference 14.2 - Page 116
+	#
+	def getUnassignedHyperVisors(self):
+		response = self.baseObject.sendRequest("GET", "/hypervisors/not_grouped.json");
+		data = json.loads(response.read());
+		if 'hypervisors' in data:
+			return data['hypervisors'];
+		else:
+			return data;
 
-        def joinDataStore(self, dataStoreID, hyperVisorID):
-                postURL = "/settings/hypervisors/%s/data_store_joins.json" % (str(hyperVisorID));
-                request = json.dumps({'data_store_id': dataStoreID});
-                response = self.baseObject.sendRequest("POST", postURL, request);
-                data = json.loads(response.read());
-                if 'data_store_join' in data:
-                        return data['data_store_join'];
-                else:
-                        return data;
-        def getListOfVMsRunning(self, hvID):
-                uriString = "/hypervisors/%s/virtual_machines.json" % (str(hvID));
-                response = self.baseObject.sendRequest("GET", uriString);
-                data = json.loads(response.read());
-                return data;
+	#
+	# Get hypervisor details, reference 14.3 - Page 118
+	#
+	def getHyperVisorDetails(self, hvID):
+		uriString = "/settings/hypervisors/%s.json" % (str(hvID));
+		response = self.baseObject.sendRequest("GET", uriString);
+		data = json.loads(response.read());
+		if 'hypervisor' in data:
+			return data['hypervisor'];
+		else:
+			return data;
+			
+	#
+	# Add a new hypervisor, reference 14.4 - Page 120
+	#
+	def addHyperVisor(self, ip_address, label, hypervisor_type, memory_overhead, enabled, hypervisor_group_id, disable_failover):
+		request = json.dumps( 	{ "hypervisor": { 	
+													"label": 				str(label),
+													"enabled": 				str(enabled),
+													"ip_address": 			str(ip_address),  
+													"hypervisor_type": 		str(hypervisor_type),
+													"memory_overhead": 		str(memory_overhead),
+													"disable_failover": 	str(disable_failover),
+													"hypervisor_group_id": 	str(hypervisor_group_id),
+												} 
+								} );
+		response = self.baseObject.sendRequest("POST", "/settings/hypervisors.json", request);
+		data = json.loads(response.read());
+		if 'hypervisor' in data:
+			return data['hypervisor'];
+		else:
+			return data;
+	
+	#
+	# Edit a hypervisor, reference 14.5 - Page 120
+	#
+	def editHyperVisor(self, hypervisor_id, ip_address, label, hypervisor_type, memory_overhead, enabled, hypervisor_group_id, disable_failover):
+		uriString = "/settings/hypervisors/%d.json" % hypervisor_id;
+		request = json.dumps( 	{ "hypervisor": { 	
+													"label": 				str(label),
+													"enabled": 				str(enabled),
+													"ip_address": 			str(ip_address),  
+													"hypervisor_type": 		str(hypervisor_type),
+													"memory_overhead": 		str(memory_overhead),
+													"disable_failover": 	str(disable_failover),
+													"hypervisor_group_id": 	str(hypervisor_group_id),
+												} 
+								} );
+		
+		response = self.baseObject.sendRequest("PUT", uriString, request);
+		data = json.loads(response.read());
+		if 'hypervisor' in data:
+			return data['hypervisor'];
+		else:
+			return data;
+			
+	#
+	# Reboot a Hypervisor, reference 14.6 - Page 121
+	# @note: Not implemented because current sendRequest wont handle none 200 request returns
+	#def rebootHyperVisor(self, hypervisor_id):
+	
+	#
+	# Get the list of VM's running on the hypervisor, reference 14.7 - Page 122
+	#
+	def getListOfVMsRunning(self, hypervisor_id):
+		uriString = "/hypervisors/%s/virtual_machines.json" % (str(hypervisor_id));
+		response = self.baseObject.sendRequest("GET", uriString);
+		data = json.loads(response.read());
+		return data;
+	
+	#
+	# Get the list of data store joins attached to the hypervisor, reference 14.8 - Page 122
+	#
+	def getJoinedDataStores(self, hypervisor_id):
+		uriString "/settings/hypervisors/%d/data_store_joins.json" % hypervisor_id;
+		response = self.baseObject.sendRequest("GET", uriString);
+		data = json.loads(response.read());
+		if 'data_store_joins' in data:
+			return data['data_store_joins'];
+		else:
+			return data;
+	
+	#
+	# Add a data store join to the hypervisor, reference 14.9 - Page 123
+	#
+	def joinDataStore(self, dataStoreID, hyperVisorID):
+		postURL = "/settings/hypervisors/%s/data_store_joins.json" % (str(hyperVisorID));
+		request = json.dumps({'data_store_id': dataStoreID});
+		response = self.baseObject.sendRequest("POST", postURL, request);
+		data = json.loads(response.read());
+		if 'data_store_join' in data:
+			return data['data_store_join'];
+		else:
+			return data;
+			
+	#
+	# Remove a data store join from the hypervisor, reference 14.10 - Page 123
+	#
+	def removeDataStoreJoin(self, datastore_id, hypervisor_id):
+		uriString = "/settings/hypervisors/%d/data_store_joins/%d" % (hypervisor_id, datastore_id);
+		self.baseObject.sendRequest("DELETE", uriString);
+		return True; ### It doesn't return anything anyways
+	
 
-        def getListHyperVisors(self):
-                uriString = "/settings/hypervisors.json";
-                response = self.baseObject.sendRequest("GET", uriString);
-                data = json.loads(response.read());
-                return data;
 
 class OnAppVirtualMachines:
-        baseObject = False;
-        def __init__(self, baseObject):
-                self.baseObject = baseObject;
+	baseObject = False;
+	def __init__(self, baseObject):
+		self.baseObject = baseObject;
 
-        def createVM(self, vmParams):
-                request = json.dumps({"virtual_machine": vmParams});
-                response = self.baseObject.sendRequest("POST", "/virtual_machines.json", request);
-                data = json.loads(response.read());
-                if 'virtual_machine' in data:
-                        return data['virtual_machine'];
-                else:
-                        return data;
-        def destroyVM(self, vmID):
-                response = self.baseObject.sendRequest("DELETE", str("/virtual_machines/%s.json" % (vmID)));
-                data = json.loads(response.read());
-                ### This method doesnt return anything
+	def createVM(self, vmParams):
+		request = json.dumps({"virtual_machine": vmParams});
+		response = self.baseObject.sendRequest("POST", "/virtual_machines.json", request);
+		data = json.loads(response.read());
+		if 'virtual_machine' in data:
+			return data['virtual_machine'];
+		else:
+			return data;
+	def destroyVM(self, vmID):
+		response = self.baseObject.sendRequest("DELETE", str("/virtual_machines/%s.json" % (vmID)));
+		data = json.loads(response.read());
+		### This method doesnt return anything
 
 
-        def getListOfVirtualMachines(self):
-                response = self.baseObject.sendRequest("GET", "/virtual_machines.json");
-                data = json.loads(response.read());
-                if 'virtual_machines' in data:
-                        return data['virtual_machines'];
-                else:
-                        return data;
-        def shutdownVM(self, vmID):
-                uriString = "/virtual_machines/%s/shutdown.json" % (vmID);
-                response = self.baseObject.sendRequest("POST", uriString);
-                data = json.loads(response.read());
-        def startupVM(self, vmID):
-                uriString = "/virtual_machines/%s/startup.json" % (vmID);
-                response = self.baseObject.sendRequest("POST", uriString);
+	def getListOfVirtualMachines(self):
+		response = self.baseObject.sendRequest("GET", "/virtual_machines.json");
+		data = json.loads(response.read());
+		if 'virtual_machines' in data:
+			return data['virtual_machines'];
+		else:
+			return data;
+			
 
-        def migrate(self, vmID, destinationID, coldRollback):
-                uriString = "/virtual_machines/%s/migrate.json" % (vmID);
-                request = json.dumps({"virtual_machine": {"destination": str(destinationID), "cold_migrate_on_rollback": str(coldRollback)}});
-                response = self.baseObject.sendRequest("POST", uriString, request);
-                data = json.loads(response.read());
-                if "virtual_machine" in data:
-                        return data['virtual_machine'];
-                else:
-                        return data;
+	def shutdownVM(self, vmID):
+		uriString = "/virtual_machines/%s/shutdown.json" % (vmID);
+		response = self.baseObject.sendRequest("POST", uriString);
+		data = json.loads(response.read());
+		
+		
+	def startupVM(self, vmID):
+		uriString = "/virtual_machines/%s/startup.json" % (vmID);
+		response = self.baseObject.sendRequest("POST", uriString);
+		
+
+	def migrate(self, vmID, destinationID, coldRollback):
+		uriString = "/virtual_machines/%s/migrate.json" % (vmID);
+		request = json.dumps({"virtual_machine": {"destination": str(destinationID), "cold_migrate_on_rollback": str(coldRollback)}});
+		response = self.baseObject.sendRequest("POST", uriString, request);
+		data = json.loads(response.read());
+		if "virtual_machine" in data:
+			return data['virtual_machine'];
+		else:
+			return data;
+					
+
 
 class OnAppTransactions:
         baseObject = False;
