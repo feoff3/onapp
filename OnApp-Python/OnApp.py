@@ -58,58 +58,167 @@ class OnAppBase:
                         return array['version'];
                 return False;
 
-
 class OnAppDataStoreZones:
-        baseObject = False;
-        def __init__(self, baseObject):
-                self.baseObject = baseObject;
+	baseObject = False;
+	def __init__(self, baseObject):
+		self.baseObject = baseObject;
 
+	#
+	# Get the list of data store zones, reference 10.1 - Page 95
+	#	
 
-        def getDataStoreZoneList(self):
-                response = self.baseObject.sendRequest("GET", "/data_store_zones.json");
-                data = json.loads(response.read());
-                return data;
+	def getDataStoreZoneList(self):
+		response = self.baseObject.sendRequest("GET", "/data_store_zones.json");
+		data = json.loads(response.read());
+		return data;
 
-        def addDataStoreZone(self, label):
-                request = {'pack': {'label': label}};
-                request = json.dumps(request);
-                response = self.baseObject.sendRequest("POST", "/data_store_zones.json", request);
-                data = response.read();
-                data = json.loads(data);
-                if 'data_store_group' in data:
-                        return data['data_store_group'];
-                else:
-                        return data;
-        def destroy(self, dsZID):
-                response = self.baseObject.sendRequest("DELETE", str('/data_store_zones/%s.json' %(dsZID)));
-                data = json.loads(response.read());
-                ##returns nothing###
+	#
+	# Add a data store zone, reference 10.2 - Page 95
+	#	
 
+	def addDataStoreZone(self, label):
+		request = {'pack': {'label': label}};
+		request = json.dumps(request);
+		response = self.baseObject.sendRequest("POST", "/data_store_zones.json", request);
+		data = response.read();
+		data = json.loads(data);
+		if 'data_store_group' in data:
+			return data['data_store_group'];
+		else:
+			return data;
+
+	#
+	# Get data store zone details, reference 10.3 - Page 96
+	#						
+
+	def getDataStoreZoneDetails(self, dszID):
+		uriString = "/data_store_zones/%s.json" % (str(dszID));
+		response = self.baseObject.sendRequest("GET", uriString);
+		data = json.loads(response.read());
+		if 'datastore_store_group' in data:
+			return data['datastore_store_group'];
+		else:
+			return data;
+
+	#
+	# Edit a data store zone label, reference 10.4 - Page 96
+	#
+
+	def editDataStoreZone(self, dszID, dsLabel):
+		uriString = "/data_store_zones/%d.json" % dszID;
+		request = json.dumps(	{ "data_store_group": 
+			{ "label": str(dsLabel) }
+		}
+		);
+		response = self.baseObject.sendRequest("PUT", uriString, request);
+		data = json.loads(response.read());
+		if 'data_store_group' in data:
+			return data['data_store_group'];
+		else:
+			return data;
+
+	#
+	# Delete a data store zone, reference 10.5 - Page 97
+	#		
+
+	def destroy(self, dszID):
+		response = self.baseObject.sendRequest("DELETE", str('/data_store_zones/%s.json' %(dszID)));
+		data = json.loads(response.read());
+		##returns nothing###
+	
+	#
+	# Get the list of data stores attached to a data store zone, reference 10.6 - Page 97
+	#				
+
+	def getListOfAttachedDataStores(self, dszID):
+		uriString = "/data_store_zones/%d/data_stores.json" % dszID;
+		response = self.baseObject.sendRequest("GET", uriString);
+		data = json.loads(response.read());
+		return data;
+
+	#
+	# Attach a data store to a data store zone,  reference 10.7 - Page 99
+	#				
+
+	def attachDataStoreToZone(self, dsID, dszID):
+		postURL = "/data_store_zones/%d/data_stores/%d/attach.json" % (dszID, dsID);
+		response = self.baseObject.sendRequest("POST", postURL);
+		data = json.loads(response.read());
+
+	#
+	# Detach a data store to a data store zone,  reference 10.8 - Page 99
+	#				
+
+	def detachDataStoreFromZone(self, dszID, dsID):
+		postURL = "/data_store_zones/%d/data_stores/%d/detach.json" % (dszID, dsID);
+		response = self.baseObject.sendRequest("POST", postURL);
+		data = json.loads(response.read());	
 
 class OnAppDataStores:
-        baseObject = False;
-        def __init__(self, baseObject):
-                self.baseObject = baseObject;
+	baseObject = False;
+	def __init__(self, baseObject):
+		self.baseObject = baseObject;
 
-        def getDataStores(self):
-                response = self.baseObject.sendRequest("GET", "/settings/data_stores.json");
-                data = json.loads(response.read());
-                return data;
-        def addDataStore(self, label, dataStoreZoneID, ipAddress, dataStoreSize, enabled=True):
-                request = {'data_store': {"label": label, "data_store_group": dataStoreZoneID, "ip": ipAddress, "enabled": enabled, "data_store_size": dataStoreSize}};
-                request = json.dumps(request);
-                response = self.baseObject.sendRequest("POST", "/settings/data_stores.json", request);
-                data = json.loads(response.read());
-                ## Seems there is a bug in onapp and it doesnt apply the dataStoreZoneID, lets update datastore and apply it
-                if 'data_store' in data:
-                        return data['data_store'];
-                else:
-                        return data;
+	#
+	# Get the list of data stores,  reference 19.1 - Page 142
+	#				
 
-        def destroy(self, dsID):
-                response = self.baseObject.sendRequest("DELETE", str('/settings/data_stores/%s.json' %(dsID)));
-                data = json.loads(response.read());
-                ##returns nothing###
+	def getDataStores(self):
+		response = self.baseObject.sendRequest("GET", "/settings/data_stores.json");
+		data = json.loads(response.read());
+		return data;
+		
+	#
+	# Get data store details,  reference 19.2 - Page 142
+	#		
+
+	def getDataStoreDetails(self, dsID):
+		uriString = "/settings/data_stores/%s" % dsID;
+		response = self.baseObject.sendRequest("GET", uriString);
+		data = json.loads(response.read());
+		return data;
+		
+	#
+	# Add a new data store,  reference 19.3 - Page 143
+	#		
+
+	def addDataStore(self, label, dataStoreZoneID, ipAddress, dataStoreSize, enabled=True):
+		request = {'data_store': {"label": label, "data_store_group": dataStoreZoneID, "ip": ipAddress, "enabled": enabled, "data_store_size": dataStoreSize}};
+		request = json.dumps(request);
+		response = self.baseObject.sendRequest("POST", "/settings/data_stores.json", request);
+		data = json.loads(response.read());
+		## Seems there is a bug in onapp and it doesnt apply the dataStoreZoneID, lets update datastore and apply it
+		if 'data_store' in data:
+			return data['data_store'];
+		else:
+			return data;
+			
+	#
+	# Edit a data store,  reference 19.4 - Page 144
+	#
+
+	def editDataStore(self, dsID):
+		uriString = "/data_stores/%d.json" % dsID;
+		request = json.dumps(	{ "data_store_group": 
+			{ "label": str(label) }
+		}
+		);
+		response = self.baseObject.sendRequest("PUT", uriString, request);
+		data = json.loads(response.read());
+		if 'data_store_group' in data:
+			return data['data_store_group'];
+		else:
+			return data;
+
+	#
+	# Delete a data store,  reference 19.5 - Page 145
+	#
+	def destroy(self, dsID):
+		response = self.baseObject.sendRequest("DELETE", str('/settings/data_stores/%s.json' %(dsID)));
+		data = json.loads(response.read());
+		##returns nothing###	
+	
+	
 
 class OnAppHyperVisorZones:
         baseObject = False;
