@@ -429,6 +429,18 @@ class OnAppTransactions:
         def __init__(self, baseObject):
                 self.baseObject = baseObject;
 
+	#
+	# Get the list of transactions,  reference 42.1 - Page 298
+	#					
+		
+		def getTransactionList(self):
+			response = self.baseObject.sendRequest("GET", "/transactions.json");
+			data = json.loads(response.read());
+			return data;				
+	#
+	# Get the list of a VM’s transactions,  reference 42.2 - Page 299
+	#	
+				
         def getVirtualMachinesTransactions(self, virtualMachineID):
                 uriString = "/virtual_machines/%s/transactions.json" % (virtualMachineID);
                 response = self.baseObject.sendRequest("GET", uriString);
@@ -438,6 +450,10 @@ class OnAppTransactions:
                 else:
                         return data;
 
+	#
+	# Get a particular transaction’s details,  reference 42.3 - Page 300
+	#	
+		
         def getParticularTransaction(self, transactionID):
                 uriString = "/transactions/%s.json" % (transactionID);
                 response = self.baseObject.sendRequest("GET", uriString);
