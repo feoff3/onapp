@@ -4,7 +4,7 @@
         @Email: karl@crucialp.com
         @License GPL 3.0
         @Version 1.1
-		@Contributed: Daniel Tandowski
+	@Contributed: Daniel Tandowski
 
     OnApp Python Module - Providing a Python Interface for OnApp
     Copyright (C) 2012  Karl Kloppenborg
@@ -23,8 +23,8 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-
 #Import the basic required modules needed to run and request API
+
 import base64, httplib, urllib, urllib2, json, random, string, time, uuid, logging, os, sys;
 
 class OnAppBase:
@@ -36,7 +36,6 @@ class OnAppBase:
                 try:
                         logging.info("Connecting to HTTPConnection");
                         self.conn.connect();
-
                 except:
                         logging.exception('Unable to run HTTPConnection Connect, unable to continue!');
                         sys.exit(1);
@@ -48,7 +47,6 @@ class OnAppBase:
                 else:
                         self.conn.request(type, page, requestData, headers);
                 return self.conn.getresponse();
-
 
         def getVersion(self):
                 #Make Request to OnApp with Basic Auth
@@ -125,7 +123,7 @@ class OnAppDataStoreZones:
 		response = self.baseObject.sendRequest("DELETE", str('/data_store_zones/%s.json' %(dszID)));
 		data = json.loads(response.read());
 		##returns nothing###
-	
+
 	#
 	# Get the list of data stores attached to a data store zone, reference 10.6 - Page 97
 	#				
@@ -167,7 +165,7 @@ class OnAppDataStores:
 		response = self.baseObject.sendRequest("GET", "/settings/data_stores.json");
 		data = json.loads(response.read());
 		return data;
-		
+
 	#
 	# Get data store details,  reference 19.2 - Page 142
 	#		
@@ -177,7 +175,7 @@ class OnAppDataStores:
 		response = self.baseObject.sendRequest("GET", uriString);
 		data = json.loads(response.read());
 		return data;
-		
+
 	#
 	# Add a new data store,  reference 19.3 - Page 143
 	#		
@@ -192,7 +190,7 @@ class OnAppDataStores:
 			return data['data_store'];
 		else:
 			return data;
-			
+
 	#
 	# Edit a data store,  reference 19.4 - Page 144
 	#
@@ -213,14 +211,13 @@ class OnAppDataStores:
 	#
 	# Delete a data store,  reference 19.5 - Page 145
 	#
+
 	def destroy(self, dsID):
 		response = self.baseObject.sendRequest("DELETE", str('/settings/data_stores/%s.json' %(dsID)));
 		data = json.loads(response.read());
 		##returns nothing###	
-	
-	
 
-class OnAppHyperVisorZones:
+class OnAppHypervisorZones:
         baseObject = False;
         def __init__(self, baseObject):
                 self.baseObject = baseObject;
@@ -240,7 +237,7 @@ class OnAppHyperVisorZones:
 	# Get the list of hypervisor zones, reference 12.1 - Page 104 
 	#
 
-        def getListOfHyperVisorsInZone(self, hyperVisorZoneID):
+        def getListOfHypervisorsInZone(self, hyperVisorZoneID):
                 getURL = "/settings/hypervisor_zones/%s/hypervisors.json" % (str(hyperVisorZoneID));
                 response = self.baseObject.sendRequest("GET", getURL);
                 data = json.loads(response.read());
@@ -250,7 +247,7 @@ class OnAppHyperVisorZones:
 	# Add a hypervisor zone, reference 12.2 - Page 104 
 	#
 
-	def addHyperVisorZone(self, label):
+	def addHypervisorZone(self, label):
 		request = {'pack': {'label': label}};
 		request = json.dumps(request);
 		response = self.baseObject.sendRequest("POST", "/hypervisor__zones.json", request);
@@ -260,12 +257,12 @@ class OnAppHyperVisorZones:
 			return data['hypervisor_group'];
 		else:
 			return data;
-		
+
 	#
 	# Get hypervisor zone details, reference 12.3 - Page 105 
 	#
 
-	def getHyperVisorZoneDetails(self, hyperVisorZoneID):
+	def getHypervisorZoneDetails(self, hvzID):
 		uriString = "/hypervisor_zones/%s.json" % (str(hyperVisorZoneID));
 		response = self.baseObject.sendRequest("GET", uriString);
 		data = json.loads(response.read());
@@ -274,27 +271,64 @@ class OnAppHyperVisorZones:
 		else:
 			return data;
 
+	#
+	# Edit a hypervisor zone, reference 12.4 - Page 105 
+	#
 
-class OnAppHyperVisors:
+	def editHypervisorZone(self, hvzID, hvzLabel):
+		uriString = "/hypervisor_zones/%d.json" % hvzID;
+		request = json.dumps(	{ "hypervisor_zone_name": 
+			{ "label": str(hvzLabel) }
+		}
+		);
+		response = self.baseObject.sendRequest("PUT", uriString, request);
+		data = json.loads(response.read());
+		if 'hypervisor_zone_name' in data:
+			return data['hypervisor_zone_name'];
+		else:
+			return data;
+
+	#
+	# Delete a hypervisor zone, reference 12.5 - Page 106 
+	#
+
+	def destroy(self, hvzID):
+		response = self.baseObject.sendRequest("DELETE", str('/hypervisor_zones/%s.json' %(hvzID)));
+		data = json.loads(response.read());
+		##returns nothing###
+
+	#
+	# Get the list of hypervisors attached to hypervisor zone, reference 12.6 - Page 106 
+	#
+
+	def getListOfAttachedHypervisors(self, hvzID):
+		uriString = "/data_store_zones/%d/hypervisors.json" % hvzID;
+		response = self.baseObject.sendRequest("GET", uriString);
+		data = json.loads(response.read());
+		return data;
+
+
+class OnAppHypervisors:
 	baseObject = False;
 	def __init__(self, baseObject):
 			self.baseObject = baseObject;
-			
-	######## HyperVisor Methods ########
-	
+
+	######## Hypervisor Methods ########
 	#
 	# Get the list of Hypervisors, reference 14.1 - Page 116
 	#
-	def getListHyperVisors(self):
+
+	def getListHypervisors(self):
 		uriString = "/settings/hypervisors.json";
 		response = self.baseObject.sendRequest("GET", uriString);
 		data = json.loads(response.read());
 		return data;
-	
+
 	#
 	# Get the list of unassigned hypervisors, reference 14.2 - Page 116
 	#
-	def getUnassignedHyperVisors(self):
+
+	def getUnassignedHypervisors(self):
 		response = self.baseObject.sendRequest("GET", "/hypervisors/not_grouped.json");
 		data = json.loads(response.read());
 		if 'hypervisors' in data:
@@ -305,7 +339,8 @@ class OnAppHyperVisors:
 	#
 	# Get hypervisor details, reference 14.3 - Page 118
 	#
-	def getHyperVisorDetails(self, hvID):
+
+	def getHypervisorDetails(self, hvID):
 		uriString = "/settings/hypervisors/%s.json" % (str(hvID));
 		response = self.baseObject.sendRequest("GET", uriString);
 		data = json.loads(response.read());
@@ -313,11 +348,12 @@ class OnAppHyperVisors:
 			return data['hypervisor'];
 		else:
 			return data;
-			
+
 	#
 	# Add a new hypervisor, reference 14.4 - Page 120
 	#
-	def addHyperVisor(self, ip_address, label, hypervisor_type, memory_overhead, enabled, hypervisor_group_id, disable_failover):
+
+	def addHypervisor(self, ip_address, label, hypervisor_type, memory_overhead, enabled, hypervisor_group_id, disable_failover):
 		request = json.dumps( 	{ "hypervisor": { 	
 													"label": 				str(label),
 													"enabled": 				str(enabled),
@@ -334,11 +370,12 @@ class OnAppHyperVisors:
 			return data['hypervisor'];
 		else:
 			return data;
-	
+
 	#
 	# Edit a hypervisor, reference 14.5 - Page 120
 	#
-	def editHyperVisor(self, hypervisor_id, ip_address, label, hypervisor_type, memory_overhead, enabled, hypervisor_group_id, disable_failover):
+
+	def editHypervisor(self, hypervisor_id, ip_address, label, hypervisor_type, memory_overhead, enabled, hypervisor_group_id, disable_failover):
 		uriString = "/settings/hypervisors/%d.json" % hypervisor_id;
 		request = json.dumps( 	{ "hypervisor": { 	
 													"label": 				str(label),
@@ -350,31 +387,33 @@ class OnAppHyperVisors:
 													"hypervisor_group_id": 	str(hypervisor_group_id),
 												} 
 								} );
-		
 		response = self.baseObject.sendRequest("PUT", uriString, request);
 		data = json.loads(response.read());
 		if 'hypervisor' in data:
 			return data['hypervisor'];
 		else:
 			return data;
-			
+
 	#
 	# Reboot a Hypervisor, reference 14.6 - Page 121
 	# @note: Not implemented because current sendRequest wont handle none 200 request returns
-	#def rebootHyperVisor(self, hypervisor_id):
-	
+
+	#def rebootHypervisor(self, hypervisor_id):
+
 	#
 	# Get the list of VM's running on the hypervisor, reference 14.7 - Page 122
 	#
+
 	def getListOfVMsRunning(self, hypervisor_id):
 		uriString = "/hypervisors/%s/virtual_machines.json" % (str(hypervisor_id));
 		response = self.baseObject.sendRequest("GET", uriString);
 		data = json.loads(response.read());
 		return data;
-	
+
 	#
 	# Get the list of data store joins attached to the hypervisor, reference 14.8 - Page 122
 	#
+
 	def getJoinedDataStores(self, hypervisor_id):
 		uriString "/settings/hypervisors/%d/data_store_joins.json" % hypervisor_id;
 		response = self.baseObject.sendRequest("GET", uriString);
@@ -383,10 +422,11 @@ class OnAppHyperVisors:
 			return data['data_store_joins'];
 		else:
 			return data;
-	
+
 	#
 	# Add a data store join to the hypervisor, reference 14.9 - Page 123
 	#
+
 	def joinDataStore(self, dataStoreID, hyperVisorID):
 		postURL = "/settings/hypervisors/%s/data_store_joins.json" % (str(hyperVisorID));
 		request = json.dumps({'data_store_id': dataStoreID});
@@ -396,15 +436,15 @@ class OnAppHyperVisors:
 			return data['data_store_join'];
 		else:
 			return data;
-			
+
 	#
 	# Remove a data store join from the hypervisor, reference 14.10 - Page 123
 	#
+
 	def removeDataStoreJoin(self, datastore_id, hypervisor_id):
 		uriString = "/settings/hypervisors/%d/data_store_joins/%d" % (hypervisor_id, datastore_id);
 		self.baseObject.sendRequest("DELETE", uriString);
 		return True; ### It doesn't return anything anyways
-	
 
 
 class OnAppVirtualMachines:
@@ -420,11 +460,11 @@ class OnAppVirtualMachines:
 			return data['virtual_machine'];
 		else:
 			return data;
+
 	def destroyVM(self, vmID):
 		response = self.baseObject.sendRequest("DELETE", str("/virtual_machines/%s.json" % (vmID)));
 		data = json.loads(response.read());
 		### This method doesnt return anything
-
 
 	def getListOfVirtualMachines(self):
 		response = self.baseObject.sendRequest("GET", "/virtual_machines.json");
@@ -433,18 +473,15 @@ class OnAppVirtualMachines:
 			return data['virtual_machines'];
 		else:
 			return data;
-			
 
 	def shutdownVM(self, vmID):
 		uriString = "/virtual_machines/%s/shutdown.json" % (vmID);
 		response = self.baseObject.sendRequest("POST", uriString);
 		data = json.loads(response.read());
-		
-		
+
 	def startupVM(self, vmID):
 		uriString = "/virtual_machines/%s/startup.json" % (vmID);
 		response = self.baseObject.sendRequest("POST", uriString);
-		
 
 	def migrate(self, vmID, destinationID, coldRollback):
 		uriString = "/virtual_machines/%s/migrate.json" % (vmID);
@@ -455,7 +492,6 @@ class OnAppVirtualMachines:
 			return data['virtual_machine'];
 		else:
 			return data;
-					
 
 
 class OnAppTransactions:
@@ -466,15 +502,15 @@ class OnAppTransactions:
 	#
 	# Get the list of transactions,  reference 42.1 - Page 298
 	#					
-		
-		def getTransactionList(self):
-			response = self.baseObject.sendRequest("GET", "/transactions.json");
-			data = json.loads(response.read());
-			return data;				
+	def getTransactionList(self):
+		response = self.baseObject.sendRequest("GET", "/transactions.json");
+		data = json.loads(response.read());
+		return data;				
+
 	#
-	# Get the list of a VM’s transactions,  reference 42.2 - Page 299
+	# Get the list of a VMÂ’s transactions,  reference 42.2 - Page 299
 	#	
-				
+
         def getVirtualMachinesTransactions(self, virtualMachineID):
                 uriString = "/virtual_machines/%s/transactions.json" % (virtualMachineID);
                 response = self.baseObject.sendRequest("GET", uriString);
@@ -485,9 +521,9 @@ class OnAppTransactions:
                         return data;
 
 	#
-	# Get a particular transaction’s details,  reference 42.3 - Page 300
+	# Get a particular transactionÂ’s details,  reference 42.3 - Page 300
 	#	
-		
+
         def getParticularTransaction(self, transactionID):
                 uriString = "/transactions/%s.json" % (transactionID);
                 response = self.baseObject.sendRequest("GET", uriString);
@@ -496,3 +532,4 @@ class OnAppTransactions:
                         return data['transaction'];
                 else:
                         return data;
+
