@@ -235,11 +235,45 @@ class OnAppHyperVisorZones:
                         return data['data_store_join'];
                 else:
                         return data;
+
+	#
+	# Get the list of hypervisor zones, reference 12.1 - Page 104 
+	#
+
         def getListOfHyperVisorsInZone(self, hyperVisorZoneID):
                 getURL = "/settings/hypervisor_zones/%s/hypervisors.json" % (str(hyperVisorZoneID));
                 response = self.baseObject.sendRequest("GET", getURL);
                 data = json.loads(response.read());
-                return  data;
+                return data;
+
+	#
+	# Add a hypervisor zone, reference 12.2 - Page 104 
+	#
+
+	def addHyperVisorZone(self, label):
+		request = {'pack': {'label': label}};
+		request = json.dumps(request);
+		response = self.baseObject.sendRequest("POST", "/hypervisor__zones.json", request);
+		data = response.read();
+		data = json.loads(data);
+		if 'hypervisor_group' in data:
+			return data['hypervisor_group'];
+		else:
+			return data;
+		
+	#
+	# Get hypervisor zone details, reference 12.3 - Page 105 
+	#
+
+	def getHyperVisorZoneDetails(self, hyperVisorZoneID):
+		uriString = "/hypervisor_zones/%s.json" % (str(hyperVisorZoneID));
+		response = self.baseObject.sendRequest("GET", uriString);
+		data = json.loads(response.read());
+		if 'hypervisor_group' in data:
+			return data['hypervisor_group'];
+		else:
+			return data;
+
 
 class OnAppHyperVisors:
 	baseObject = False;
